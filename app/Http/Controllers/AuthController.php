@@ -96,9 +96,21 @@ class AuthController extends Controller
 
         $status = Password::sendResetLink($request->only('email'));
 
-        return $status === Password::RESET_LINK_SENT
-            ? back()->with('status', __($status))
-            : back()->withErrors(['email' => __($status)]);
+        if (in_array($status, [Password::RESET_LINK_SENT, Password::INVALID_USER], true)) {
+            $expireMinutes = config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60);
+
+            return back()->with('status', "E-posta adresi kayıtlıysa şifre sıfırlama bağlantısı gönderildi. Bağlantı {$expireMinutes} dakika geçerlidir.");
+        }
+
+        if ($status === Password::RESET_THROTTLED) {
+            return back()->withErrors([
+                'email' => 'Yakın zamanda bir bağlantı gönderildi. Lütfen bir dakika sonra tekrar deneyin.',
+            ])->withInput($request->only('email'));
+        }
+
+        return back()->withErrors([
+            'email' => 'Şifre sıfırlama e-postası gönderilemedi. Lütfen tekrar deneyin.',
+        ])->withInput($request->only('email'));
     }
 
     public function showResetForm(Request $request, string $token)
