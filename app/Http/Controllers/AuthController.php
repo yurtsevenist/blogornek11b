@@ -21,9 +21,9 @@ class AuthController extends Controller
     {
 
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ]);
+            'email' => ['required', 'email:rfc,dns', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'max:50'],
+        ], $this->validationMessages());
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()->withErrors(['email' => 'E-posta veya şifre hatalı.'])->onlyInput('email');
@@ -62,16 +62,19 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
+            'name' => ['required', 'string', 'min:3', 'max:100'],
+            'email' => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'max:50', 'confirmed'],
+        ], $this->validationMessages());
 
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'role' => 'kullanıcı',
+            'last_login_at' => now(),
+            'last_login_device' => Str::limit($request->userAgent() ?: 'Bilinmiyor', 255, ''),
+            'last_login_ip' => $request->ip(),
         ]);
 
         Auth::login($user);
@@ -87,7 +90,9 @@ class AuthController extends Controller
 
     public function sendResetLinkEmail(Request $request)
     {
-        $request->validate(['email' => ['required', 'email']]);
+        $request->validate([
+            'email' => ['required', 'email:rfc,dns', 'max:255'],
+        ], $this->validationMessages());
 
         $status = Password::sendResetLink($request->only('email'));
 
@@ -108,9 +113,9 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'token' => ['required'],
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
+            'email' => ['required', 'email:rfc,dns', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'max:50', 'confirmed'],
+        ], $this->validationMessages());
 
         $status = Password::reset($data, function (User $user, string $password) {
             $user->forceFill([
@@ -133,5 +138,25 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    private function validationMessages(): array
+    {
+        return [
+            'name.required' => 'Ad soyad alanı zorunludur.',
+            'name.string' => 'Ad soyad metin biçiminde olmalıdır.',
+            'name.min' => 'Ad soyad en az 3 karakter olmalıdır.',
+            'name.max' => 'Ad soyad en fazla 100 karakter olabilir.',
+            'email.required' => 'E-posta adresi alanı zorunludur.',
+            'email.email' => 'RFC biçimine uygun, geçerli bir e-posta adresi girin.',
+            'email.max' => 'E-posta adresi en fazla 255 karakter olabilir.',
+            'email.unique' => 'Bu e-posta adresi zaten kayıtlı.',
+            'password.required' => 'Şifre alanı zorunludur.',
+            'password.string' => 'Şifre metin biçiminde olmalıdır.',
+            'password.min' => 'Şifre en az 8 karakter olmalıdır.',
+            'password.max' => 'Şifre en fazla 50 karakter olabilir.',
+            'password.confirmed' => 'Şifre tekrarı eşleşmiyor.',
+            'token.required' => 'Şifre yenileme anahtarı eksik veya geçersiz.',
+        ];
     }
 }

@@ -19,7 +19,7 @@
     </div>
     <div class="input-group mb-2">
         <div class="form-floating"><input id="password" type="password" name="password" class="form-control" placeholder="Şifre" autocomplete="current-password" required><label for="password">Şifre</label></div>
-        <div class="input-group-text"><span class="bi bi-lock-fill"></span></div>
+        <button class="input-group-text password-toggle" type="button" data-password-toggle data-target="password" aria-label="Şifreyi göster" aria-pressed="false"><span class="bi bi-eye" aria-hidden="true"></span></button>
     </div>
     <div class="row mt-3">
         <div class="col-8 d-inline-flex align-items-center"><div class="form-check"><input id="remember" type="checkbox" name="remember" value="1" class="form-check-input"><label class="form-check-label" for="remember">Beni hatırla</label></div></div>
