@@ -16,13 +16,22 @@
         <div class="section-heading"><div><span class="eyebrow">GÜNCELDEN</span><h2>Son yazılar</h2></div><a class="text-link" href="{{ url('blog-yazilarim') }}">Tüm yazılar <span aria-hidden="true">→</span></a></div>
         <div class="post-grid">
             @forelse ($blogs as $blog)
-                <a class="post-card" href="{{ url('blog-yazilarim') }}">
-                    <span class="post-category">BLOG</span>
+                <article class="post-card">
+                    <span class="post-category">
+                        <a href="{{ route('blogs.index', ['kategori' => $blog->category]) }}">{{ $blog->category ?: 'KATEGORİSİZ' }}</a>
+                    </span>
                     <span class="post-number">{{ sprintf('%02d', $loop->iteration) }}</span>
-                    <h3>{{ $blog->title }}</h3>
+                    <h3><a href="{{ route('blogs.show', $blog->slug) }}">{{ $blog->title }}</a></h3>
                     <p>{{ $blog->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($blog->content), 120) }}</p>
+                    @if (!empty($blog->tags))
+                        <div class="post-tags" aria-label="Etiketler">
+                            @foreach ($blog->tags as $tag)
+                                <a href="{{ route('blogs.index', ['etiket' => $tag]) }}">{{ $tag }}</a>
+                            @endforeach
+                        </div>
+                    @endif
                     <span class="post-meta">{{ $blog->created_at->format('d.m.Y') }} <span aria-hidden="true">↗</span></span>
-                </a>
+                </article>
             @empty
                 <p>Henüz blog yazısı eklenmemiş.</p>
             @endforelse

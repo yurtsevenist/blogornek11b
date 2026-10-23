@@ -45,3 +45,67 @@
         });
     });
 }());
+
+document.addEventListener('DOMContentLoaded', function () {
+    var loadMore = document.querySelector('[data-infinite-scroll]');
+    var blogList = document.querySelector('.blog-list');
+    if (!loadMore || !blogList) return;
+
+    var link = loadMore.querySelector('a');
+    var status = loadMore.querySelector('.blog-loading');
+    var loading = false;
+
+    function fetchNextPage() {
+        if (loading || !loadMore.dataset.nextUrl) return;
+
+        loading = true;
+        loadMore.classList.remove('has-error');
+        loadMore.classList.add('is-loading');
+        loadMore.setAttribute('aria-busy', 'true');
+
+        fetch(loadMore.dataset.nextUrl, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+            .then(function (response) {
+                if (!response.ok) throw new Error('Yazılar yüklenemedi.');
+                return response.json();
+            })
+            .then(function (data) {
+                blogList.insertAdjacentHTML('beforeend', data.html);
+                loadMore.dataset.nextUrl = data.next_page_url || '';
+
+                if (data.next_page_url) {
+                    link.href = data.next_page_url;
+                    status.textContent = 'Yazılar yükleniyor…';
+                } else {
+                    loadMore.remove();
+                }
+            })
+            .catch(function () {
+                status.textContent = 'Yükleme başarısız. Tekrar denemek için tıkla.';
+                loadMore.classList.add('has-error');
+            })
+            .finally(function () {
+                loading = false;
+                if (document.body.contains(loadMore)) {
+                    loadMore.classList.remove('is-loading');
+                    loadMore.removeAttribute('aria-busy');
+                }
+            });
+    }
+
+    link.addEventListener('click', function (event) {
+        event.preventDefault();
+        fetchNextPage();
+    });
+
+    if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+            if (entries[0].isIntersecting) fetchNextPage();
+        }, { rootMargin: '400px 0px' });
+        observer.observe(loadMore);
+    }
+});

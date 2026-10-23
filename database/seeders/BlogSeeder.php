@@ -17,6 +17,8 @@ class BlogSeeder extends Seeder
     public function run()
     {
         $faker = FakerFactory::create('tr_TR');
+        $categories = ['Teknoloji', 'Yazılım', 'Kişisel Gelişim', 'Kitaplar', 'Yaşam'];
+        $availableTags = ['Laravel', 'PHP', 'Web Geliştirme', 'Verimlilik', 'Öğrenme', 'Kitap', 'Tasarım', 'Teknoloji'];
         $coverImages = [
             'https://images.unsplash.com/photo-1499757805027-2f0e8c9d3f8f',
             'https://images.unsplash.com/photo-1455390582262-044cdead1c',
@@ -50,15 +52,17 @@ class BlogSeeder extends Seeder
             'https://images.unsplash.com/photo-1606320986603-8e9c5f8f2f6b',
         ];
 
-        for ($i = 0; $i < 30; $i++) {
+        for ($i = 0; $i < 100; $i++) {
             $title = $faker->unique()->sentence(6);
 
             Blog::create([
                 'title' => $title,
                 'slug' => Str::slug($title),
+                'category' => $faker->randomElement($categories),
+                'tags' => $faker->randomElements($availableTags, $faker->numberBetween(2, 4)),
                 'excerpt' => $faker->text(180),
                 'content' => implode("\n\n", $faker->paragraphs(6)),
-                'cover_image' => $coverImages[$i],
+                'cover_image' => $coverImages[$i % count($coverImages)],
                 'is_published' => true,
                 'published_at' => $faker->dateTimeBetween('-1 year', 'now'),
             ]);

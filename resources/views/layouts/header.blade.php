@@ -26,5 +26,16 @@
                     <a class="{{ request()->is('iletisim') ? 'is-active' : '' }}" href="{{ url('iletisim') }}">İletişim</a>
                 </div>
                 <button class="theme-toggle" type="button" aria-label="Koyu temaya geç" title="Koyu temaya geç" aria-pressed="false"><span class="theme-toggle-icon" aria-hidden="true">☾</span><span class="theme-toggle-text">Koyu tema</span></button>
+                @auth
+                    <details class="site-user-menu">
+                        <summary class="theme-toggle" aria-label="Kullanıcı menüsü">{{ auth()->user()->name }} <span class="theme-toggle-icon" aria-hidden="true">⌄</span></summary>
+                        <div class="site-user-dropdown">
+                            <a href="#">Profil sayfam</a>
+                            <form action="{{ route('logout') }}" method="post">@csrf<button type="submit">Oturumu kapat</button></form>
+                        </div>
+                    </details>
+                @else
+                    <a class="theme-toggle login-button" href="{{ route('login') }}" aria-label="Giriş yap" title="Giriş yap"><span class="theme-toggle-icon" aria-hidden="true">↪</span><span class="theme-toggle-text">Giriş yap</span></a>
+                @endauth
             </div>
         </nav>

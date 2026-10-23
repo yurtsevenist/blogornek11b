@@ -14,6 +14,8 @@ class Blog extends Model
         'user_id',
         'title',
         'slug',
+        'category',
+        'tags',
         'excerpt',
         'content',
         'cover_image',
@@ -27,6 +29,7 @@ class Blog extends Model
         'views_count' => 'integer',
         'likes_count' => 'integer',
         'dislikes_count' => 'integer',
+        'tags' => 'array',
     ];
 
     public function user(): BelongsTo
